@@ -157,7 +157,7 @@
     <h1>看清楚每一筆<br><span class="grad">定期定額</span>的真實報酬</h1>
     <p class="lead">基金 / ETF 的含息還原回測與投資組合分析。用真實歷史淨值精準試算,並和同期間的加權指數做公平對照 —— 一眼看懂你到底贏大盤多少。</p>
     <div class="cta-row">
-      <a class="btn btn-primary btn-lg" id="hero-dl" href="https://github.com/OswallowO/FundTerminal/releases/latest">⬇ 下載 Windows 版</a>
+      <a class="btn btn-primary btn-lg" id="hero-dl" href="https://github.com/OswallowO/FundTerminal/releases/latest/download/FundTerminal_Setup.exe">⬇ 下載 Windows 版</a>
       <a class="btn btn-ghost btn-lg" href="#features">看看功能</a>
     </div>
     <p class="cta-note">免費 · 開箱即用 · <b>含息還原,模擬不失真</b></p>
@@ -270,8 +270,8 @@
       <div class="verbadge"><span class="dot"></span> 最新版 <span id="ver" class="num">v0.2.2</span> · Windows 10 / 11</div>
       <h2>現在就開始試算</h2>
       <p>單一執行檔,免安裝、不寫登錄檔。下載後雙擊即可使用。</p>
-      <a class="btn btn-primary btn-lg" id="dl-btn" href="https://github.com/OswallowO/FundTerminal/releases/latest/download/FundTerminal.exe">⬇ 下載 FundTerminal.exe</a>
-      <div class="dl-meta">首次執行若 Windows SmartScreen 提示,點「其他資訊 → 仍要執行」即可。</div>
+      <a class="btn btn-primary btn-lg" id="dl-btn" href="https://github.com/OswallowO/FundTerminal/releases/latest/download/FundTerminal_Setup.exe">⬇ 下載安裝檔(Windows)</a>
+      <div class="dl-meta">安裝後會建立桌面與開始選單捷徑,點開即以獨立視窗執行。首次執行若 Windows SmartScreen 提示,點「其他資訊 → 仍要執行」即可。<br>也可<a id="dl-portable" href="https://github.com/OswallowO/FundTerminal/releases/latest/download/FundTerminal.exe" style="color:var(--accent);font-weight:700">下載免安裝可攜版</a>。</div>
     </div>
   </div>
 </section>
@@ -301,12 +301,12 @@
     .then(d => {
       if (!d || !d.tag_name) return;
       document.getElementById("ver").textContent = d.tag_name;
-      var exe = (d.assets || []).find(a => /\.exe$/i.test(a.name));
-      if (exe) {
-        document.getElementById("dl-btn").href = exe.browser_download_url;
-        document.getElementById("hero-dl").href = exe.browser_download_url;
-        document.getElementById("nav-dl").href = exe.browser_download_url;
-      }
+      var assets = d.assets || [];
+      var setup = assets.find(a => /setup.*\.exe$/i.test(a.name));
+      var port = assets.find(a => /^fundterminal\.exe$/i.test(a.name));
+      var dl = setup ? setup.browser_download_url : (port ? port.browser_download_url : null);
+      if (dl) ["dl-btn", "hero-dl", "nav-dl"].forEach(function(id){ var e=document.getElementById(id); if(e) e.href=dl; });
+      if (port) { var p=document.getElementById("dl-portable"); if(p) p.href=port.browser_download_url; }
     })
     .catch(() => {});
 </script>
