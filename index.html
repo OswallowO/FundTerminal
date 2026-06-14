@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FUND TERMINAL · 基金走勢分析模擬終端</title>
+<meta name="description" content="基金 / ETF 的含息還原回測與投資組合分析,和大盤公平對照。Windows 桌面版,免安裝、自動更新。" />
+<meta property="og:title" content="FUND TERMINAL · 基金走勢分析模擬終端" />
+<meta property="og:description" content="看清楚每一筆定期定額的真實報酬 — 含息還原、投資組合回測、與大盤公平對照。" />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://api.github.com" />
+<style>
+  :root{
+    --bg:#0a0e17; --bg2:#0f1421; --panel:#121829; --panel2:#161d30;
+    --line:#1e2940; --line2:#2a3654; --txt:#e6ecf5; --dim:#8a97b0; --mute:#5a6680;
+    --accent:#4dd0e1; --accent2:#5b8cff; --up:#ff4d5e; --down:#20c997; --gold:#f5b942;
+    --glow:0 0 28px rgba(77,208,225,.28);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:
+      radial-gradient(1200px 620px at 78% -8%, rgba(91,140,255,.14), transparent 60%),
+      radial-gradient(1000px 560px at -8% 8%, rgba(77,208,225,.10), transparent 55%),
+      var(--bg);
+    color:var(--txt); font-family:"Segoe UI","Microsoft JhengHei",system-ui,sans-serif;
+    line-height:1.6; -webkit-font-smoothing:antialiased; letter-spacing:.2px; overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+  .num{font-variant-numeric:tabular-nums}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);
+    background:linear-gradient(180deg,rgba(12,16,28,.9),rgba(10,14,23,.6));border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:2px;font-size:15px}
+  .logo{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;color:var(--bg);
+    background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:var(--glow);font-size:18px}
+  .nav-links{display:flex;align-items:center;gap:28px}
+  .nav-links a{color:var(--dim);font-size:14px;font-weight:600;transition:color .15s}
+  .nav-links a:hover{color:var(--txt)}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;font-weight:700;cursor:pointer;
+    border:none;font-family:inherit;transition:transform .12s,filter .15s,background .15s}
+  .btn:active{transform:scale(.97)}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#06262b;
+    padding:11px 20px;font-size:14px;box-shadow:var(--glow)}
+  .btn-primary:hover{filter:brightness(1.08)}
+  .btn-ghost{background:transparent;color:var(--txt);border:1px solid var(--line2);padding:11px 20px;font-size:14px}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-lg{padding:15px 30px;font-size:16px;border-radius:12px}
+  @media(max-width:760px){.nav-links a:not(.nav-cta){display:none}}
+
+  /* hero */
+  .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;padding:78px 0 64px}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:1px;
+    color:var(--accent);background:rgba(77,208,225,.1);border:1px solid rgba(77,208,225,.3);
+    padding:6px 13px;border-radius:999px;margin-bottom:22px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--down);box-shadow:0 0 8px var(--down);
+    animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  h1{font-size:46px;line-height:1.15;font-weight:800;letter-spacing:.5px}
+  h1 .grad{background:linear-gradient(120deg,var(--accent),var(--accent2));-webkit-background-clip:text;
+    background-clip:text;color:transparent}
+  .lead{color:var(--dim);font-size:18px;margin:20px 0 30px;max-width:520px}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .cta-note{color:var(--mute);font-size:13px;margin-top:16px}
+  .cta-note b{color:var(--dim);font-weight:700}
+  @media(max-width:880px){.hero{grid-template-columns:1fr;padding:54px 0 40px}h1{font-size:36px}}
+
+  /* product mockup */
+  .mock{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);
+    border-radius:16px;padding:14px;box-shadow:0 30px 80px rgba(0,0,0,.55);position:relative}
+  .mock::before{content:"";position:absolute;inset:-1px;border-radius:16px;padding:1px;
+    background:linear-gradient(140deg,rgba(77,208,225,.5),transparent 40%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+  .mock-bar{display:flex;align-items:center;gap:7px;padding:4px 6px 12px}
+  .mock-bar i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .mock-bar .r{background:#ff5f57}.mock-bar .y{background:#febc2e}.mock-bar .g{background:#28c840}
+  .mock-bar span{margin-left:10px;color:var(--mute);font-size:11px;letter-spacing:1px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:11px}
+  .kpi{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+  .kpi .l{color:var(--mute);font-size:9.5px;letter-spacing:.5px}
+  .kpi .v{font-weight:800;font-size:17px;margin-top:5px}
+  .kpi .v.up{color:var(--up)} .kpi .s{color:var(--mute);font-size:9px;margin-top:3px}
+  .chartbox{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 12px 6px}
+  .chartbox .ch-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .chartbox .ch-h b{font-size:11px} .chartbox .ch-h span{font-size:10px;color:var(--mute)}
+  .lg{display:inline-flex;gap:12px;font-size:9.5px}
+  .lg i{font-style:normal}.lg .a{color:var(--accent)}.lg .b{color:var(--gold)}
+
+  /* sections */
+  section{padding:62px 0}
+  .sec-head{text-align:center;max-width:640px;margin:0 auto 44px}
+  .sec-head .tag{color:var(--accent);font-weight:700;font-size:13px;letter-spacing:2px}
+  .sec-head h2{font-size:32px;font-weight:800;margin:10px 0 12px;letter-spacing:.5px}
+  .sec-head p{color:var(--dim);font-size:16px}
+
+  .feat{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:880px){.feat{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);
+    border-radius:14px;padding:24px;transition:transform .18s,border-color .18s}
+  .card:hover{transform:translateY(-4px);border-color:var(--line2)}
+  .ico{width:46px;height:46px;border-radius:11px;display:grid;place-items:center;font-size:22px;margin-bottom:15px;
+    background:rgba(77,208,225,.1);border:1px solid rgba(77,208,225,.25)}
+  .card h3{font-size:18px;margin-bottom:8px}
+  .card p{color:var(--dim);font-size:14.5px}
+
+  /* steps */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;counter-reset:s}
+  @media(max-width:880px){.steps{grid-template-columns:1fr}}
+  .step{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 22px}
+  .step::before{counter-increment:s;content:"0" counter(s);font-weight:800;font-size:28px;
+    background:linear-gradient(120deg,var(--accent),var(--accent2));-webkit-background-clip:text;
+    background-clip:text;color:transparent;letter-spacing:1px}
+  .step h3{font-size:17px;margin:8px 0 6px}.step p{color:var(--dim);font-size:14px}
+
+  /* download */
+  .dl{background:linear-gradient(135deg,rgba(77,208,225,.12),rgba(91,140,255,.1));
+    border:1px solid var(--line2);border-radius:20px;padding:54px 30px;text-align:center}
+  .dl h2{font-size:32px;font-weight:800;margin-bottom:12px}
+  .dl p{color:var(--dim);font-size:16px;margin-bottom:26px}
+  .verbadge{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--dim);
+    background:var(--bg);border:1px solid var(--line2);padding:5px 12px;border-radius:999px;margin-bottom:22px}
+  .dl-meta{color:var(--mute);font-size:13px;margin-top:18px}
+
+  /* footer */
+  footer{border-top:1px solid var(--line);padding:40px 0 30px;margin-top:40px}
+  .foot{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:flex-start}
+  .foot .brand{margin-bottom:10px}
+  .disc{color:var(--mute);font-size:12px;max-width:560px;line-height:1.7}
+  .foot-links{display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--dim)}
+  .foot-links a:hover{color:var(--accent)}
+  .copy{color:var(--mute);font-size:12px;margin-top:26px;text-align:center}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav">
+    <div class="brand"><span class="logo">▚</span> FUND TERMINAL</div>
+    <div class="nav-links">
+      <a href="#features">功能</a>
+      <a href="#portfolio">投資組合</a>
+      <a href="#start">如何開始</a>
+      <a href="https://github.com/OswallowO/FundTerminal" target="_blank" rel="noopener">GitHub</a>
+      <a class="nav-cta btn btn-primary" id="nav-dl" href="https://github.com/OswallowO/FundTerminal/releases/latest">⬇ 下載</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="wrap hero">
+  <div>
+    <span class="eyebrow"><span class="dot"></span> Windows 桌面版 · 免安裝 · 自動更新</span>
+    <h1>看清楚每一筆<br><span class="grad">定期定額</span>的真實報酬</h1>
+    <p class="lead">基金 / ETF 的含息還原回測與投資組合分析。用真實歷史淨值精準試算,並和同期間的加權指數做公平對照 —— 一眼看懂你到底贏大盤多少。</p>
+    <div class="cta-row">
+      <a class="btn btn-primary btn-lg" id="hero-dl" href="https://github.com/OswallowO/FundTerminal/releases/latest">⬇ 下載 Windows 版</a>
+      <a class="btn btn-ghost btn-lg" href="#features">看看功能</a>
+    </div>
+    <p class="cta-note">免費 · 開箱即用 · <b>含息還原,模擬不失真</b></p>
+  </div>
+
+  <!-- product mockup -->
+  <div class="mock" aria-hidden="true">
+    <div class="mock-bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>FUND TERMINAL — 投資組合</span></div>
+    <div class="kpis">
+      <div class="kpi"><div class="l">組合市值</div><div class="v num">5,654萬</div><div class="s">投入 182萬</div></div>
+      <div class="kpi"><div class="l">總報酬率</div><div class="v up num">+2998%</div><div class="s">持有 9655 天</div></div>
+      <div class="kpi"><div class="l">總獲利</div><div class="v up num">5,471萬</div><div class="s">持倉 2 檔</div></div>
+      <div class="kpi"><div class="l">年化 XIRR</div><div class="v up num">+13.9%</div><div class="s">vs 大盤 +382%</div></div>
+    </div>
+    <div class="chartbox">
+      <div class="ch-h"><b>累計報酬率:組合 vs 加權指數</b><span class="lg"><i class="a">● 投資組合</i><i class="b">● 加權指數</i></span></div>
+      <svg viewBox="0 0 520 150" width="100%" height="150" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#5b8cff" stop-opacity=".28"/>
+            <stop offset="1" stop-color="#5b8cff" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <line x1="0" y1="120" x2="520" y2="120" stroke="#1e2940"/>
+        <line x1="0" y1="80" x2="520" y2="80" stroke="#1e2940"/>
+        <line x1="0" y1="40" x2="520" y2="40" stroke="#1e2940"/>
+        <path d="M0,128 L120,124 L210,118 L300,110 L370,96 L420,74 L470,40 L520,10 L520,150 L0,150 Z" fill="url(#fill)"/>
+        <path d="M0,128 L120,124 L210,118 L300,110 L370,96 L420,74 L470,40 L520,10" fill="none" stroke="#5b8cff" stroke-width="2.2"/>
+        <path d="M0,134 L120,132 L210,130 L300,127 L370,123 L420,118 L470,112 L520,104" fill="none" stroke="#f5b942" stroke-width="1.8"/>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="tag">FEATURES</div>
+      <h2>為認真試算而生</h2>
+      <p>不是隨便畫條線,而是用券商級資料口徑,把報酬算到對。</p>
+    </div>
+    <div class="feat">
+      <div class="card"><div class="ico">📈</div><h3>含息還原的真實報酬</h3><p>ETF 採含息還原收盤價、基金採累積淨值,並自動偵測除權息 / 分割造成的價格斷崖回補,模擬不失真。</p></div>
+      <div class="card"><div class="ico">🗓️</div><h3>定期定額模擬</h3><p>自選每月扣款日(可複選)、扣款金額與起始本金,逐日算出單位數、市值、報酬率與年化 XIRR。</p></div>
+      <div class="card"><div class="ico">🧺</div><h3>投資組合回測</h3><p>多檔標的各自獨立設定(不同買進日、本金、扣款),合併成組合總走勢,附每檔投入 / 市值 / 報酬 / 權重。</p></div>
+      <div class="card"><div class="ico">⚖️</div><h3>同現金流對照大盤</h3><p>把你的每一筆投入「改買加權指數」算出對照報酬,apples-to-apples 比較你贏大盤多少。</p></div>
+      <div class="card"><div class="ico">📑</div><h3>專業報表匯出</h3><p>PDF 報告(績效摘要、持倉明細、走勢圖、每日明細)、Excel 多工作表與 CSV,一鍵帶走。</p></div>
+      <div class="card"><div class="ico">🔄</div><h3>桌面終端 · 自動更新</h3><p>深色專業介面、互動式走勢圖(線性 / 對數切換),單一執行檔免安裝;有新版主畫面一鍵更新。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PORTFOLIO showcase -->
+<section id="portfolio">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="tag">PORTFOLIO</div>
+      <h2>把一籃子標的一起回測</h2>
+      <p>每檔持倉各自設定買進日、本金與扣款,合併成一條組合總走勢,並列出個別貢獻與權重。</p>
+    </div>
+    <div class="mock" style="max-width:880px;margin:0 auto" aria-hidden="true">
+      <div class="mock-bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>持倉明細</span></div>
+      <div class="chartbox" style="padding:0;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+          <thead><tr style="background:#1f2a44;color:#fff;text-align:right">
+            <th style="text-align:left;padding:9px 12px">標的</th><th style="padding:9px 12px">買進日</th>
+            <th style="padding:9px 12px">投入</th><th style="padding:9px 12px">市值</th>
+            <th style="padding:9px 12px">報酬率</th><th style="padding:9px 12px">權重</th></tr></thead>
+          <tbody class="num">
+            <tr style="border-bottom:1px solid #1e2940;text-align:right">
+              <td style="text-align:left;padding:9px 12px;color:var(--dim)">元大台灣50</td><td style="padding:9px 12px">2020-03-02</td>
+              <td style="padding:9px 12px">170,500</td><td style="padding:9px 12px">590,902</td>
+              <td style="padding:9px 12px;color:var(--up)">+246.6%</td><td style="padding:9px 12px">1.5%</td></tr>
+            <tr style="border-bottom:1px solid #1e2940;text-align:right;background:rgba(91,140,255,.05)">
+              <td style="text-align:left;padding:9px 12px;color:var(--dim)">富邦台50</td><td style="padding:9px 12px">2020-03-31</td>
+              <td style="padding:9px 12px">318,000</td><td style="padding:9px 12px">1,065,789</td>
+              <td style="padding:9px 12px;color:var(--up)">+235.2%</td><td style="padding:9px 12px">2.7%</td></tr>
+            <tr style="text-align:right">
+              <td style="text-align:left;padding:9px 12px;color:var(--dim)">瀚亞高科技基金</td><td style="padding:9px 12px">1997-07-02</td>
+              <td style="padding:9px 12px">1,654,000</td><td style="padding:9px 12px">37,314,261</td>
+              <td style="padding:9px 12px;color:var(--up)">+2156.0%</td><td style="padding:9px 12px">95.7%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUICKSTART -->
+<section id="start">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="tag">QUICKSTART</div>
+      <h2>三步開始</h2>
+      <p>不用安裝、不用註冊,下載就能跑。</p>
+    </div>
+    <div class="steps">
+      <div class="step"><h3>下載並執行</h3><p>到 Releases 下載 <code>FundTerminal.exe</code>,雙擊執行 —— 免安裝,程式會自動開啟瀏覽器顯示介面。</p></div>
+      <div class="step"><h3>設定標的與條件</h3><p>搜尋基金 / ETF(如 0050、瀚亞),選起始日、填本金或定期定額金額與扣款日。</p></div>
+      <div class="step"><h3>模擬與匯出</h3><p>按下開始模擬看 KPI 與走勢;切到投資組合分頁可多檔合併;結果一鍵匯出 PDF / Excel / CSV。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section>
+  <div class="wrap">
+    <div class="dl">
+      <div class="verbadge"><span class="dot"></span> 最新版 <span id="ver" class="num">v0.2.2</span> · Windows 10 / 11</div>
+      <h2>現在就開始試算</h2>
+      <p>單一執行檔,免安裝、不寫登錄檔。下載後雙擊即可使用。</p>
+      <a class="btn btn-primary btn-lg" id="dl-btn" href="https://github.com/OswallowO/FundTerminal/releases/latest/download/FundTerminal.exe">⬇ 下載 FundTerminal.exe</a>
+      <div class="dl-meta">首次執行若 Windows SmartScreen 提示,點「其他資訊 → 仍要執行」即可。</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <div class="brand"><span class="logo">▚</span> FUND TERMINAL</div>
+        <p class="disc"><b style="color:var(--dim)">免責聲明:</b>本工具僅以公開歷史資料進行模擬試算與教育用途,所有數字為歷史回測結果,不構成任何投資建議或獲利保證。投資有風險,過去績效不代表未來表現,請依自身判斷並諮詢合格專業人士。</p>
+      </div>
+      <div class="foot-links">
+        <a href="#features">功能特色</a>
+        <a href="#start">如何開始</a>
+        <a href="https://github.com/OswallowO/FundTerminal/releases" target="_blank" rel="noopener">所有版本</a>
+        <a href="https://github.com/OswallowO/FundTerminal" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+    <div class="copy">© 2026 FUND TERMINAL · 基金走勢分析模擬終端</div>
+  </div>
+</footer>
+
+<script>
+  // 動態抓最新版本號,下載永遠指向 latest
+  fetch("https://api.github.com/repos/OswallowO/FundTerminal/releases/latest")
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      if (!d || !d.tag_name) return;
+      document.getElementById("ver").textContent = d.tag_name;
+      var exe = (d.assets || []).find(a => /\.exe$/i.test(a.name));
+      if (exe) {
+        document.getElementById("dl-btn").href = exe.browser_download_url;
+        document.getElementById("hero-dl").href = exe.browser_download_url;
+        document.getElementById("nav-dl").href = exe.browser_download_url;
+      }
+    })
+    .catch(() => {});
+</script>
+</body>
+</html>
