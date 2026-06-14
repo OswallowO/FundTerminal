@@ -38,8 +38,8 @@
   .logo{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;color:var(--bg);
     background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:var(--glow);font-size:18px}
   .nav-links{display:flex;align-items:center;gap:28px}
-  .nav-links a{color:var(--dim);font-size:14px;font-weight:600;transition:color .15s}
-  .nav-links a:hover{color:var(--txt)}
+  .nav-links a:not(.btn){color:var(--dim);font-size:14px;font-weight:600;transition:color .15s}
+  .nav-links a:not(.btn):hover{color:var(--txt)}
   .btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;font-weight:700;cursor:pointer;
     border:none;font-family:inherit;transition:transform .12s,filter .15s,background .15s}
   .btn:active{transform:scale(.97)}
